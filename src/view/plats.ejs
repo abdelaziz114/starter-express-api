@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLATS</title>
+    <link href="/css/Plats.css" rel="stylesheet" type="text/css">
+
+     <script>
+        async function order() {
+            const id = document.getElementById('id').value;
+            const count = document.getElementById('count').value;
+            const address = document.getElementById('address').value;
+
+            const response = await fetch('/order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id, count, address }),
+            });
+
+            if (response.ok) {
+                alert('Order placed successfully!');
+            } else {
+                alert('Failed to place order. Please try again.');
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <form>
+        <input type="text" id="id"/>
+        <input type="number" id="count"/>
+        <input type="text" id="address"/>
+        <div>
+            
+        <ul>
+            <% for (let plat of plats) { %>
+                <li><%= plat.name %></li>
+            <% } %>
+        </ul>
+            <button class="button-17" role="button" onclick="order">Button 17</button>
+        </div>
+
+    </form>
+</body>
+
+</html>

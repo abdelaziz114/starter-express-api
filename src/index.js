@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const path = require('path');
 const PlatRouter=require("/workspaces/starter-express-api/src/Routes/plats")
+const SPAMRouter=require("/workspaces/starter-express-api/src/Routes/Spam")
 const session =require("express-session");
 
 app.use(express.json());
@@ -28,8 +29,8 @@ app.post('/', (req, res) => {
 
 app.get('/', (req, res) => {
     console.log("Just got a request!");
-    res.send('<h1>post!</h1>');
+    res.send('<h1>get!</h1>');
 })
 app.use(PlatRouter);
-
+app.use(SPAMRouter);
 app.listen(process.env.PORT || 3000)

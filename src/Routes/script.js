@@ -1,289 +1,145 @@
+const { TIMEOUT } = require('dns');
 const puppeteer = require('puppeteer');
-const fs = require('fs');
-
-require('console-stamp')(console, {
-    format: ':date(yyyy/mm/dd HH:MM:ss.l)'
-});
 
 (async () => {
-    var news;
-
-
-    // Function that reads files with  path
-
-    const readFileLines = filename =>
-        fs.readFileSync(filename)
-            .toString('UTF8')
-            .split("\n");
-
-    // Calling the readFiles function with file name : 
-
-    let arr = readFileLines('email_List.txt');
-
-    // Randomize the order of newsletter's subscription :
-
-    function randomize(array_newsletter, arg) {
-
-        let array_randomized = [];
-
-        for (i = 0; i < 20; i++) {
-
-            let random_number = Math.floor(Math.random() * (arg - 2));
-            //console.log(random_number);
-
-            if (!array_randomized.includes(array_newsletter[random_number])) {
-
-                array_randomized.push(array_newsletter[random_number])
-
-            }else{
-                i--;
-            }
+    try {
+        // ---------delay function ------
+        function delay(time) {
+            return new Promise(function(resolve) { 
+                setTimeout(resolve, time)
+            });
         }
-        return array_randomized;
-    }
 
-    // delay timing function 
-
-    function delay(time) {
-        return new Promise(function (resolve) {
-            setTimeout(resolve, time)
-        });
-    }
-
-    // timing calculation function :
-
-    function msToTime(duration) {
-        var milliseconds = Math.floor((duration % 1000) / 100),
-            seconds = Math.floor((duration / 1000) % 60),
-            minutes = Math.floor((duration / (1000 * 60)) % 60),
-            hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-
-        hours = (hours < 10) ? "0" + hours : hours;
-        minutes = (minutes < 10) ? "0" + minutes : minutes;
-        seconds = (seconds < 10) ? "0" + seconds : seconds;
-
-        return hours + " h : " + minutes + " m : " + seconds + " s : " + milliseconds;
-    }
-
-    // Iterating over list of emails 
-
-    let counter = 0;
-
-    var start = new Date();
-
-
-    for (const email of arr) {
-
-        counter++
-
-        const browser = await puppeteer.launch({ headless: true });
-
-        // READ the newsletter text file : 
-
-        const newsletter_urls = readFileLines('newsletters.txt');
-
-        const randomized_newsletters = randomize(newsletter_urls, newsletter_urls.length);
-
-        console.log('boite number : {' + counter + '} ' + email);
-
-        //console.log(randomized_newsletters);
-
-        // iterating over list of newsletter urls for every email  
-        for (i = 0; i < 50; i++) {
-            for (let i = 0; i < randomized_newsletters.length; i++) {
-                try {
-                    const url = randomized_newsletters[i];
-
-                    //const url = newsletter_urls[i];
-
-                    const page = await browser.newPage();
-
-                    await page.setDefaultNavigationTimeout(0);
-
-                    //await delay(3000);
-                    news = url;
-                    await page.goto(`${url}`)
-
-                    // await page.goto(`https://${url}`)
-
-                    // Injecting automation script on the page.evaluate function with the email argument
-
-                    await page.evaluate((email) => {
-
-                        let my_mail = email;
-
-                        let Fname = 'james'
-
-                        let Lname = 'mcgill';
-
-                        let Zip = '40000'
-
-                        let input_Names = document.querySelectorAll('input[type="text"]');
-
-                        let input_email = document.querySelectorAll('input[type="email"]') ? Array.from(document.querySelectorAll('input[type="email"]')) : '';
-
-                        let input_check = document.querySelectorAll('input[type="checkbox"]');
-
-                        let button_type_submit = document.querySelectorAll('button[type="submit"]');
-
-                        let newsletter_link = document.querySelectorAll('a');
-
-                        let button_type_button = document.querySelectorAll('button[type="button"]');
-
-                        let Formik_submit = document.querySelectorAll('button[data-element="submit"]');
-
-                        let input_type_submit = document.querySelectorAll('input[type="submit"]');
-
-                        let scripts = document.getElementsByTagName("script");
-
-                        let captcha_flag = false;
-
-
-
-                        // check if captcha is on the site : 
-
-                        for (var i = 0; i < scripts.length; i++) {
-
-                            if (scripts[i].src.toLowerCase().includes('recaptcha')) {
-                                captcha_flag = true;
-                            }
-
-                        }
-
-
-                        // email input :
-
-                        input_email.forEach(i => i.value = my_mail)
-
-
-                        // check first name
-
-                        for (const i of input_Names) {
-
-                            i ? i.attributes.placeholder ? i.attributes.placeholder.value.toLowerCase().includes('first') ? i.value = Fname : '' : '' : '';
-                            i ? i.attributes.placeholder ? i.attributes.placeholder.value.toLowerCase().includes('last') ? i.value = Lname : '' : '' : '';
-                            i ? i.attributes.name ? i.attributes.name.value.toLowerCase().includes('first') ? i.value = Lname : '' : '' : '';
-                            i ? i.attributes.name ? i.attributes.name.value.toLowerCase().includes('name') ? i.value = Lname : '' : '' : '';
-                            i ? i.attributes.name ? i.attributes.name.value.toLowerCase().includes('last') ? i.value = Lname : '' : '' : '';
-
-                            i ? i.attributes.id ? i.attributes.id.value.toLowerCase().includes('mail') ? i.value = my_mail : '' : '' : '';
-                            i ? i.attributes.class ? i.attributes.class.value.toLowerCase().includes('mail') ? i.value = my_mail : '' : '' : '';
-                            i ? i.attributes.placeholder ? i.attributes.placeholder.value.toLowerCase().includes('mail') ? i.value = my_mail : '' : '' : '';
-                            i ? i.attributes.name ? i.attributes.name.value.toLowerCase().includes('mail') ? i.value = my_mail : '' : '' : '';
-                            i ? i.attributes.placeholder ? i.attributes.placeholder.value.toLowerCase().includes('zip') ? i.value = Zip : '' : '' : '';
-                        }
-
-
-                        // check all inputs : 
-
-                        input_check.forEach(i => i.checked = true)
-
-
-                        document.querySelector('input[name="subscribe"]') ? setTimeout(() => { document.querySelector('input[name="subscribe"]').click() }, 2500) : '';
-
-
-                        // input type submit and search to ignore :
-
-
-                        for (const i of input_type_submit) {
-
-                            i.attributes.class.value == 'formEmailButton' ? i.disabled = true : '';
-                            i ? i.attributes.class ? i.attributes.class.value.toLowerCase().includes('search') ? i.disabled = true : '' : '' : '';
-                            i ? i.attributes.id ? i.attributes.id.value.toLowerCase().includes('search') ? i.disabled = true : '' : '' : '';
-                            i ? i.attributes.value ? i.attributes.value.value.toLowerCase().includes('search') ? i.disabled = true : '' : '' : '';
-
-                            // captcha_flag ? alert('captcha flag') : i.click();
-                            captcha_flag ? window.close() : i.click();
-
-                        }
-
-
-                        // formik submit :
-
-                        for (const i of Formik_submit) {
-
-                            i.attributes.class.value.toLowerCase().includes('formkit-submit') ? setTimeout(() => { i.click() }, 1200) : '';
-                        }
-
-                        // link to newsletter button 
-
-                        for (const i of newsletter_link) {
-
-                            i.attributes.id ? i.attributes.id.value.toLowerCase().includes('newsletter') ? setTimeout(() => { i.click() }, 1200) : '' : '';
-                            i.attributes.class ? i.attributes.class.value.toLowerCase().includes('newsletter') ? setTimeout(() => { i.click() }, 1200) : '' : '';
-                        }
-
-                        // Submit buttons type submit with text inside :
-
-                        for (const i of button_type_submit) {
-
-                            i ? i.attributes.class ? i.attributes.class.value.toLowerCase().includes('search') ? i.disabled = true : '' : '' : '';
-                            i ? i.attributes.class ? i.attributes.class.value.toLowerCase().includes('submit') ? setTimeout(() => { i.click() }, 1200) : '' : '' : '';
-                            i.id ? i.attributes.id.value.toLowerCase().includes('sign') ? setTimeout(() => { i.click() }, 1200) : '' : '';
-                            i.value ? i.attributes.value.value.toLowerCase().includes('subscribe') ? setTimeout(() => { i.click() }, 1200) : '' : '';
-                            i.innerHTML.toLowerCase().includes('sign') ? setTimeout(() => { i.click() }, 1200) : '';
-                            i.innerHTML.toLowerCase().includes('submit') ? setTimeout(() => { i.click() }, 1200) : '';
-                            i.innerHTML.toLowerCase().includes('subscribe') ? setTimeout(() => { i.click() }, 1200) : '';
-                            i.innerHTML.toLowerCase().includes('join') ? setTimeout(() => { i.click() }, 1200) : '';
-                            i.innerHTML.toLowerCase().includes('get') ? setTimeout(() => { i.click() }, 1200) : '';
-                            i.innerHTML.toLowerCase().includes('try') ? setTimeout(() => { i.click() }, 1200) : '';
-                            i.innerHTML.toLowerCase().includes('send') ? setTimeout(() => { i.click() }, 1200) : '';
-                            i.innerHTML.toLowerCase().includes('go') ? setTimeout(() => { i.click() }, 1200) : '';
-
-                        }
-
-                        // check for button type button and text inside (subscribe / join ...) : 
-
-                        for (const i of button_type_button) {
-
-                            i ? i.attributes.class ? i.attributes.class.value.toLowerCase().includes('subscribe') ? setTimeout(() => { i.click() }, 2000) : '' : '' : '';
-                            i ? i.attributes.class ? i.attributes.class.value.toLowerCase().includes('join') ? setTimeout(() => { i.click() }, 2000) : '' : '' : '';
-                            i ? i.attributes.class ? i.attributes.class.value.toLowerCase().includes('get') ? setTimeout(() => { i.click() }, 2000) : '' : '' : '';
-                            i ? i.attributes.id ? i.attributes.id.value.toLowerCase().includes('signup') ? setTimeout(() => { i.click() }, 2000) : '' : '' : '';
-
-                            i ? i.innerHTML.toLowerCase().includes('try') ? setTimeout(() => { i.click() }, 1200) : '' : '';
-
-                            i ? i.innerHTML.toLowerCase().includes('get') ? setTimeout(() => { i.click() }, 1200) : '' : '';
-
-                            i ? i.innerHTML.toLowerCase().includes('Join ') ? setTimeout(() => { i.click() }, 1200) : '' : '';
-
-                            i ? i.innerHTML.toLowerCase().includes('ready ') ? setTimeout(() => { i.click() }, 1200) : '' : '';
-                            i ? i.innerHTML.toLowerCase().includes('subscribe ') ? setTimeout(() => { i.click() }, 1200) : '' : '';
-
-                        }
-
-
-                    }, email)
-
-                } catch (error) {
-
-                    console.log('========= This is the F url ==========>>' + news)
-                    console.log('========= This is the F error ==========>>' + error)
-
-                }
-                // closes every page after the subscription with a delay
-
-                //await delay(2000)
-                //await page.close();
-            }
+    // --------- lunch browser
+      const browser = await puppeteer.launch({headless:false});
+    
+    // ----------- lunch new page -------
+      const page = await browser.newPage();
+      //await page.goto('https://www.bannerbear.com');
+      await page.goto('https://www.bulkblacklist.com/');
+
+      // ----------- test existence of selected element -------
+      function sele(select)
+      {
+        if(select != null || select != undefined)
+        {
+            return true;
+        }
+        else{
+            return false;
+        }
+      }
+      
+      // -------- first add --------
+      await delay(2000);
+      const exit = await page.$('.CloseButton__ButtonElement-sc-79mh24-0 > svg:nth-child(1)');
+      if(sele(exit))
+      {
+        await page.click('.CloseButton__ButtonElement-sc-79mh24-0 > svg:nth-child(1)');
+      }
+        await delay(3000);
+
+        // -------- second add --------
+        /*
+      const exit1 =await page.$('.fjeyDK > svg:nth-child(1)');
+      if(sele(exit1))
+      {
+        await page.click('.fjeyDK > svg:nth-child(1)');
+      }
+*/
+    //--------- read txt content ---------
+    const {readFileSync,writeFileSync, promises: fsPromises} = require('fs');
+
+    const contents = await fsPromises.readFile('new_ip.txt', 'utf-8');
+
+    const arr = contents.split(/\r?\n/);
+
+    //---------- ip array to string ----------
+    var ip ="";
+    for(i=0;i<arr.length;i++)
+    {
+        if(i == 0)
+        {
+            ip = arr[i];
+        }
+        else
+        {
+            ip =ip + "\n" + arr[i]
         }
         
-
-        // closes the browser after the compeletion of subscriptions 
-
-        await browser.close();
-        console.log(" SUCCESS :) ")
-
-
-
     }
+    await page.type('body > center > div > div > div > form > textarea',ip);
+    await delay(1000);
+    await page.click("body > center > div > div > div > form > input");
+    await delay(1000);
+    await page.waitForSelector('body > center > div > p:nth-child(8) > button', {visible: true,timeout: 600000});
 
+    await delay(1000);
+    
 
+    
+    const evaluate_result = await page.evaluate(() =>{  // https://proxy-checker.net/en/blacklist/      
+        table = document.querySelector("body > center > div > div > div > table");
+        var acctive_ips ="";
+        var disabled_ips="";
+        var results =new Array();
+        var SpamCop="";
+        var SPAMHAUS="";
+        var Barracuda ="";
+        for(i = 1; i <table.rows.length;i++)
+        {
+            /* this is for SpamCop  */
+            if(table.rows[i].cells[3].childNodes[0].hasChildNodes("a"))
+            {
+                SpamCop = table.rows[i].cells[3].childNodes[0].childNodes[0].src.split("/")[4].split(".")[0];
+            }
+            else
+            {
+                SpamCop = table.rows[i].cells[3].childNodes[0].src.split("/")[4].split(".")[0];
+            }
 
-    var end = new Date() - start;
+            /* this is for SPAMHAUS  */
+            
+            if(table.rows[i].cells[4].childNodes[0].hasChildNodes("a"))
+            {
+                SPAMHAUS = table.rows[i].cells[4].childNodes[0].childNodes[0].src.split("/")[4].split(".")[0];
+            }
+            else
+            {
+                SPAMHAUS = table.rows[i].cells[4].childNodes[0].src.split("/")[4].split(".")[0];
+            }
+            
+            /* this is for Barracuda  */
+            
+            if(table.rows[i].cells[5].childNodes[0].hasChildNodes("a"))
+            {
+                Barracuda = table.rows[i].cells[5].childNodes[0].childNodes[0].src.split("/")[4].split(".")[0];
+            }
+            else
+            {
+                Barracuda = table.rows[i].cells[5].childNodes[0].src.split("/")[4].split(".")[0];
+            }
+            if(SpamCop == "g" && SPAMHAUS == "g" && Barracuda == "g" )
+            {
+                acctive_ips+= table.rows[i].cells[1].childNodes[0].innerHTML + "\n";
+            }
+            else
+            {
+                disabled_ips+= table.rows[i].cells[1].childNodes[0].innerHTML + "\n";
+            }
+        }
+        results.push(acctive_ips);
+        results.push(disabled_ips);
+        
+        return results;
+    });
+    console.log(evaluate_result[1])
+    //   ------ acctive proxy data to txt ----------
+    await fsPromises.writeFile('odin1.txt', evaluate_result[0]);
+    await fsPromises.writeFile('odin2.txt', evaluate_result[1]);
+    await browser.close();
 
-
-    console.log("=============== YOO I'M DONE IN => " + msToTime(end) + " ===============");
-
-
+    } catch (error) {
+        console.log("this is the error : "+error)
+    }
 })()

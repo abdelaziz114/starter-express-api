@@ -1,8 +1,12 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const app = express();
 const path = require('path');
-const PlatRouter=require("/workspaces/starter-express-api/src/Routes/plats")
-const SPAMRouter=require("/workspaces/starter-express-api/src/Routes/Spam")
+
+
+const PlatRouterpath=path.join(__dirname,  'Routes/plats');
+const SPAMRouterpath=path.join(__dirname,  'Routes/Spam');
+const PlatRouter=require(PlatRouterpath);
+const SPAMRouter=require(SPAMRouterpath);
 const session =require("express-session");
 
 app.use(express.json());

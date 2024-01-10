@@ -16,11 +16,11 @@ app.use(session({
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname,  'view')); // Adjust the path accordingly
+app.set('views', path.join(__dirname,  'src/view')); // Adjust the path accordingly
 
 
 // Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'src/public')));
 
 app.post('/', (req, res) => {
     console.log("Just got a request!");
